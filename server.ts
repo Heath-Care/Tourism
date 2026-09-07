@@ -2,7 +2,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 import Groq from 'groq-sdk';
 import { GoogleGenAI } from '@google/genai';
 import { INITIAL_DESTINATIONS } from './src/data/destinations';
@@ -1658,25 +1657,11 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // ----------------------------------------------------
-// Vite & Static Asset Handling
+// Server startup (pure API now — the frontend is deployed separately).
 // ----------------------------------------------------
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa'
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist', 'www');
-    app.use(express.static(distPath));
-    app.get('*', (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Hidden India backend & web server running at http://0.0.0.0:${PORT}`);
+    console.log(`Hidden India backend API running at http://0.0.0.0:${PORT}`);
     // Run cache pre-warming in background to ensure zero-latency image response on page load
     setTimeout(() => {
       prewarmTopImages().catch(err => console.error('Prewarm error:', err));
